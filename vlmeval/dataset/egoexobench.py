@@ -14,7 +14,7 @@ import torch
 FAIL_MSG = 'Failed to obtain answer via API.'
 
 class EgoExoBench_MCQ(VideoBaseDataset):
-    MD5 = 'cf3be3a3c1f09c57548b7ccc67d01518'
+    MD5 = 'b5c3cfe5d316f1a67a4076991f16ca9c'
     TYPE = 'Video-MCQ'
 
     def __init__(self, dataset='EgoExoBench_MCQ'):
@@ -142,7 +142,6 @@ class EgoExoBench_MCQ(VideoBaseDataset):
                 data_df = data_df.assign(index=range(len(data_df)))
                 data_df.to_csv(data_file, sep='\t', index=False)
 
-            huggingface_hub.login(hf_token)
             dataset_path = snapshot_download(repo_id=repo_id, repo_type='dataset')
             generate_tsv(dataset_path)
 
