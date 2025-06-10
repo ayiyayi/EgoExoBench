@@ -40,9 +40,9 @@ EgoExoBench/
 │   	├── data
 ```
 ### Data Preparation
-For the CVMHT and TF2023 datasets, we utilize the bounding box annotations to augment the original frames by overlaying bounding boxes that indicate the target person. To generate these bboxes, run the following commands:
+For the CVMHAT and TF2023 datasets, we utilize the bounding box annotations to augment the original frames by overlaying bounding boxes that indicate the target person. To generate these bboxes, run the following commands:
 ```
-python data/CVMHT/tools/process_bbox.py
+python data/CVMHAT/tools/process_bbox.py
 python data/TF2023/tools/process_bbox.py
 ```
 ### Download Multiple-Choice Questions (MCQs)
