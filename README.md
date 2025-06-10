@@ -1,7 +1,9 @@
 # EgoExoBench
 
   
-This is the official repository of **EgoExoBench** [Paper]()
+This is the official repository of [ EgoExoBench: A
+Benchmark for First- and Third-person View Video
+Understanding in MLLMs]()
 
 ## 📊 Benchmark Overview
 
