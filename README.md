@@ -12,6 +12,8 @@ This is the official repository of **EgoExoBench** [Paper]()
 * **Ego-Exo Temporal Reasoning**
 
 ## 📝 Data Preparation
+To get started with EgoExoBench, follow the steps below to prepare data:
+### Dataset Collection
 EgoExoBench builds upon six publicly available ego–exo datasets. Please download the videos from the following sources:
 
 * [Ego-Exo4D](https://ego-exo4d-data.org/)
@@ -35,8 +37,14 @@ EgoExoBench/
 │   ├── TF2023
 │   	├── data
 ```
-
-Next, download the EgoExoBench **multiple-choice questions (MCQs)** file and place it in the `MCQ/` directory.
+### Data Preparation
+For the CVMHT and TF2023 datasets, we utilize the bounding box annotations to augment the original frames by overlaying bounding boxes that indicate the target person. To generate these bboxes, run the following commands:
+```
+python data/CVMHT/tools/process_bbox.py
+python data/TF2023/tools/process_bbox.py
+```
+### Download Multiple-Choice Questions (MCQs)
+Download the EgoExoBench **multiple-choice questions (MCQs)** file and place it in the `MCQ/` directory.
 
 ## Installation
 ```
