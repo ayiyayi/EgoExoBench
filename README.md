@@ -7,9 +7,9 @@ This is the official repository of **EgoExoBench** [Paper]()
 
 **EgoExoBench** is a large-scale benchmark designed to evaluate cross-view video understanding in multimodal large language models (MLLMs). It contains paired egocentric–exocentric videos and over **7,300 multiple-choice questions** across **11 subtasks**, covering three key dimensions of ego–exo reasoning:
 
-* **Semantic alignment**
-* **Spatial correspondence**
-* **Sequence integration**
+* **Ego-Exo Relation**
+* **Ego-Exo View Transition**
+* **Ego-Exo Temporal Reasoning**
 
 ## 📝 Data Preparation
 EgoExoBench builds upon six publicly available ego–exo datasets. Please download the videos from the following sources:
