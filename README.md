@@ -46,7 +46,7 @@ python data/CVMHAT/tools/process_bbox.py
 python data/TF2023/tools/process_bbox.py
 ```
 ### Download Multiple-Choice Questions (MCQs)
-Download the EgoExoBench **multiple-choice questions (MCQs)** file [link](https://www.kaggle.com/datasets/d481439076f14580fc0fd85fda68e0c832e85fd7600d93d7f90e624731bebdfc) and place it in the `MCQ/` directory.
+Download the EgoExoBench **multiple-choice questions (MCQs)** file [(link)](https://www.kaggle.com/datasets/d481439076f14580fc0fd85fda68e0c832e85fd7600d93d7f90e624731bebdfc) and place it in the `MCQ/` directory.
 
 ## Installation
 ```
