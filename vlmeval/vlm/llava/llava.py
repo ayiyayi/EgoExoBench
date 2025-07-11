@@ -622,6 +622,8 @@ class LLaVA_OneVision(BaseModel):
         return text_outputs
 
     def generate_inner_video(self, message, dataset=None):
+        if dataset == "EgoExoBench_MCQ":
+            return self.generate_inner_multi_video(message, dataset)
         content, text_content, visual_content, videos = "", "", "", []
 
         for msg in message:
@@ -694,6 +696,73 @@ class LLaVA_OneVision(BaseModel):
         text_outputs = self.tokenizer.batch_decode(cont, skip_special_tokens=True)[0]
         return text_outputs
 
+    def generate_inner_multi_video(self, message, dataset=None):
+        # only test on EgoExoBench_MCQ
+        content, text_content, visual_content, videos = "", "", "", []
+        video_nframes = []
+
+        for msg in message:
+            if msg["type"] == "text":
+                text_content += msg["value"]
+            else:
+                videos.append(msg["value"])
+                visual_content += self.DEFAULT_IMAGE_TOKEN + "\n"
+                video_nframes.append(msg.get('nframes', 1))
+                text_content += self.DEFAULT_IMAGE_TOKEN + "\n"
+
+        content = text_content
+
+        image_tensors = []
+        for nframes, video in zip(video_nframes, videos):
+            if nframes == 1:
+                # process image type
+                video_frames = Image.open(video).convert("RGB")
+                video_frames = [video_frames]  # Wrap in a list for consistency
+            else:
+                video_frames, frame_time, video_time = self.load_video(
+                    video, nframes, 3, self.force_sample
+                )
+            frames = (
+                self.image_processor.preprocess(video_frames, return_tensors="pt")[
+                    "pixel_values"
+                ]
+                .half()
+                .cuda()
+            )
+            image_tensors.append(frames)
+
+        conv = copy.deepcopy(self.conv_templates[self.conv_template])
+        conv.append_message(conv.roles[0], content)
+        conv.append_message(conv.roles[1], None)
+        prompt_question = conv.get_prompt()
+
+        input_ids = self.tokenizer_image_token(
+            prompt_question, self.tokenizer, self.IMAGE_TOKEN_INDEX, return_tensors="pt"
+        )
+        input_ids = input_ids.unsqueeze(0).cuda()
+        image_sizes = [frame.size for frame in video_frames]
+        modalities=["video"] * len(image_tensors)
+
+        stop_str = conv.sep if conv.sep_style != self.SeparatorStyle.TWO else conv.sep2
+        keywords = [stop_str]
+        stopping_criteria = self.KeywordStoppingCriteria(
+            keywords, self.tokenizer, input_ids
+        )
+
+        # Pass image sizes along with other parameters
+        cont = self.model.generate(
+            input_ids,
+            images=image_tensors,
+            image_sizes=image_sizes,  # Pass the image sizes here
+            do_sample=False,
+            temperature=0,
+            max_new_tokens=2048,
+            modalities=modalities,
+            stopping_criteria=[stopping_criteria],
+        )
+        text_outputs = self.tokenizer.batch_decode(cont, skip_special_tokens=True)[0]
+        return text_outputs
+
     def load_video(self, video_path, max_frames_num, fps=1, force_sample=False):
         from decord import VideoReader, cpu
         import numpy as np
@@ -724,6 +793,119 @@ class LLaVA_OneVision(BaseModel):
         else:
             return self.generate_inner_image(message, dataset)
 
+class EgoGPT(LLaVA_OneVision):
+    IGNORE_INDEX = -100
+    IMAGE_TOKEN_INDEX = -300
+    DEFAULT_IMAGE_TOKEN = "<image>"
+    
+    def __init__(self, model_path="lmms-lab/llava-onevision-qwen2-7b-si", **kwargs):
+        assert model_path is not None
+        try:
+            from egogpt.model.builder import load_pretrained_model
+            from egogpt.conversation import conv_templates
+            from egogpt.mm_utils import (
+                process_images,
+            )  # noqa: E501
+        except Exception as err:
+            logging.critical(
+                "Please `pip install git+https://github.com/EvolvingLMMs-Lab/EgoLife`"
+            )
+            raise err
+
+        rank, world_size = get_rank_and_world_size()
+        import warnings
+        # filter warning align with official code
+        warnings.filterwarnings("ignore")
+        tokenizer, model, _ = load_pretrained_model(
+            model_path,
+            device_map="auto",
+        )
+        model.eval()
+
+        self.conv_templates = conv_templates
+        self.tokenizer = tokenizer
+        self.model = model
+        self.image_processor = model.get_vision_tower().image_processor
+        self.process_images = (
+            process_images  # Store process_images as a class attribute
+        )
+
+    def split_text(self, text, keywords):
+        import re
+        pattern = "(" + "|".join(map(re.escape, keywords)) + ")"
+        parts = re.split(pattern, text)
+        parts = [part for part in parts if part]
+        return parts
+
+    def generate_inner_video(self, message, dataset=None):
+        # only test on EgoExoBench_MCQ dataset
+        content = ""
+
+        image_tensors = []
+        for msg in message:
+            if msg["type"] == "text":
+                content += msg["value"]
+            else:
+                content += self.DEFAULT_IMAGE_TOKEN + "\n"
+                media_path = msg["value"]
+                if msg['type'] == 'image':
+                    video_frames = Image.open(media_path).convert("RGB")
+                    video_frames = [video_frames]
+                else:
+                    video_frames, frame_time, video_time = self.load_video(
+                        media_path, msg['nframes'], 3, True
+                    )
+                frames = (
+                    self.image_processor.preprocess(video_frames, return_tensors="pt")[
+                        "pixel_values"
+                    ]
+                    .half()
+                    .cuda()
+                )
+                image_tensors.append(frames)
+                
+        image_tensors = [t.to(self.model.device) for t in image_tensors]
+
+        conv_template = "qwen_1_5"
+        conv = copy.deepcopy(self.conv_templates[conv_template])
+        conv.append_message(conv.roles[0], content)
+        conv.append_message(conv.roles[1], None)
+        prompt_question = conv.get_prompt()
+        
+        parts = self.split_text(prompt_question, ["<image>"])
+        input_ids = []
+        for part in parts:
+            if part == "<image>":
+                input_ids.append(self.IMAGE_TOKEN_INDEX)
+            elif part == "<speech>":
+                input_ids.append(self.SPEECH_TOKEN_INDEX)
+            else:
+                input_ids.extend(self.tokenizer(part).input_ids)
+
+        input_ids = torch.tensor(input_ids, dtype=torch.long).unsqueeze(0).to(self.model.device)
+        
+        speech = torch.zeros(3000, 128)
+        speech = torch.stack([speech]).to(self.model.device).half()
+        speech_lengths = torch.LongTensor([3000])
+        
+        image_sizes = [frame.size for frame in video_frames]
+        generate_kwargs = {"eos_token_id": self.tokenizer.eos_token_id}
+
+        # Pass image sizes along with other parameters
+        cont = self.model.generate(
+            input_ids,
+            images=image_tensors,
+            image_sizes=image_sizes,  # Pass the image sizes here
+            speech=speech,
+            speech_lengths=speech_lengths,
+            do_sample=False,
+            temperature=0.5,
+            max_new_tokens=2048,
+            modalities=["video"] * len(image_tensors),
+            **generate_kwargs,
+        )
+        text_outputs = self.tokenizer.batch_decode(cont, skip_special_tokens=True)[0]
+        return text_outputs
 
 class LLaVA_OneVision_HF(BaseModel):
     INSTALL_REQ = True

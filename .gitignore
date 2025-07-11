@@ -202,3 +202,11 @@ tmp/
 InternVL*
 Qwen*
 CongRong*
+
+results
+EgoExoBench
+all_anns
+mcq.zip
+run_bak.py
+vlmeval/mytools
+vlmeval/dataset/egoexobench_copy.py

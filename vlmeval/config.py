@@ -648,6 +648,9 @@ llava_series = {
     "varco-vision-hf": partial(
         LLaVA_OneVision_HF, model_path="NCSOFT/VARCO-VISION-14B-HF"
     ),
+    'EgoGPT-7b-EgoIT': partial(
+        EgoGPT, model_path = 'lmms-lab/EgoGPT-7b-EgoIT'
+    )
 }
 
 vita_series = {
@@ -1162,7 +1165,7 @@ qwen2vl_series = {
         model_path="Qwen/Qwen2.5-VL-72B-Instruct",
         min_pixels=128 * 28 * 28,
         max_pixels=768 * 28 * 28,
-        total_pixels=24576 * 28 * 28,
+        total_pixels=128000 * 28 * 28,
         use_custom_prompt=False,
     ),
     "Qwen2.5-VL-72B-Instruct-AWQ": partial(
