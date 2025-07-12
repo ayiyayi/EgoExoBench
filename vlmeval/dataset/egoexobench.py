@@ -28,14 +28,14 @@ class EgoExoBench_MCQ(VideoBaseDataset):
     def prepare_dataset(self, dataset_name='EgoExoBench_MCQ', repo_id='Heleun/EgoExoBench_MCQ'):
         def check_integrity(pth):
             data_file = osp.join(pth, f'{dataset_name}.tsv')
+            video_dir = osp.join(pth, "processed_video")
+            frames_dir = osp.join(pth, "processed_frames")
 
-            if not os.path.exists(data_file):
+            if not osp.exists(data_file) or not osp.exists(video_dir) or not osp.exists(frames_dir):
                 return False
-
+            
             if md5(data_file) != self.MD5:
                 return False
-
-            data = load(data_file)
             
             return True
         cache_path = get_cache_path(repo_id)
@@ -142,10 +142,12 @@ class EgoExoBench_MCQ(VideoBaseDataset):
                 data_df = data_df.assign(index=range(len(data_df)))
                 data_df.to_csv(data_file, sep='\t', index=False)
 
+            os.environ['HUGGINGFACE_TOKEN'] = ''
+            hf_token = os.environ.get('HUGGINGFACE_TOKEN')
+            huggingface_hub.login(hf_token)
+            
             dataset_path = snapshot_download(repo_id=repo_id, repo_type='dataset')
             generate_tsv(dataset_path)
-
-
 
         data_file = osp.join(dataset_path, f'{dataset_name}.tsv')
         # transform
@@ -155,25 +157,8 @@ class EgoExoBench_MCQ(VideoBaseDataset):
         ])
         
         return dict(root=dataset_path, data_file=data_file)
-    
-    def get_index(self, bound, fps, max_frame, first_idx=0, num_segments=16):
-        start, end = bound if bound else (-100000, 100000)
-        start_idx = max(first_idx, round(start * fps))
-        end_idx = min(round(end * fps), max_frame)
-        seg_size = (end_idx - start_idx) / num_segments
-        mid_seg_size = seg_size / 2
-        indices = np.arange(num_segments)
-        frame_indices = start_idx + mid_seg_size + np.round(seg_size * indices)
-        return frame_indices.astype(int)
-    
 
     def load_into_video_and_process(self, media, mcq_idx):
-        try:
-            from moviepy import VideoFileClip, ImageSequenceClip
-        except:
-            raise ImportError(
-                'MoviePy is not installed, please install it by running "pip install moviepy"'
-            )
         video_root = self.video_root
 
         if media['type'] in ['frames']:
