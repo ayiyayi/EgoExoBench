@@ -21,7 +21,7 @@ EgoExoBench builds upon six publicly available ego–exo datasets. Please downlo
 * [Ego-Exo4D](https://ego-exo4d-data.org/)
 * [LEMMA](https://sites.google.com/view/lemma-activity)
 * [EgoExoLearn](https://huggingface.co/datasets/hyf015/EgoExoLearn)
-* [TF2023](https://github.com/facebookresearch/Ego-Exo)
+* [TF2023](https://github.com/ziweizhao1993/PEN)
 * [EgoMe](https://huggingface.co/datasets/HeqianQiu/EgoMe)
 * [CVMHAT](https://github.com/RuizeHan/CVMHT)
 
@@ -69,5 +69,5 @@ python run.py --data EgoExoBench_MCQ --model Qwen2.5-VL-72B-Instruct-ForVideo
 
 ## 🙏 Acknowledgements
 This codebase is based on [VLMEvalKit](https://github.com/open-compass/VLMEvalKit).
-EgoExoBench builds upon publicly available ego–exo datasets: [Ego-Exo4D](https://ego-exo4d-data.org/), [LEMMA](https://sites.google.com/view/lemma-activity), [EgoExoLearn](https://huggingface.co/datasets/hyf015/EgoExoLearn),  [TF2023](https://github.com/facebookresearch/Ego-Exo), [EgoMe](https://huggingface.co/datasets/HeqianQiu/EgoMe), [CVMHAT](https://github.com/RuizeHan/CVMHT).
+EgoExoBench builds upon publicly available ego–exo datasets: [Ego-Exo4D](https://ego-exo4d-data.org/), [LEMMA](https://sites.google.com/view/lemma-activity), [EgoExoLearn](https://huggingface.co/datasets/hyf015/EgoExoLearn),  [TF2023](https://github.com/ziweizhao1993/PEN), [EgoMe](https://huggingface.co/datasets/HeqianQiu/EgoMe), [CVMHAT](https://github.com/RuizeHan/CVMHT).
 Thanks for open-sourcing!
