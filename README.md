@@ -28,20 +28,20 @@ EgoExoBench builds upon six publicly available ego–exo datasets. Please downlo
 Place all datasets under the `data/` directory. The dataset structure is as follows:
 ```
 EgoExoBench/
-├── data/
-│   ├── CVMHAT
-│   	├── data
-│   ├── Ego-Exo4D
-│   	├── takes
-│   ├── EgoExoLearn
-│   ├── EgoMe
-│   ├── LEMMA
-│   ├── TF2023
-│   	├── data
+└── data/
+    ├── CVMHAT/
+    │   └── data
+    ├── Ego-Exo4D/
+    │   └── takes/
+    ├── EgoExoLearn/
+    ├── EgoMe/
+    ├── LEMMA/
+    └── TF2023/
+        └── data/
 ```
 ### Data Preparation
 For the CVMHAT and TF2023 datasets, we utilize the bounding box annotations to augment the original frames by overlaying bounding boxes that indicate the target person. To generate these bboxes, run the following commands:
-```
+```shell
 python data/CVMHAT/tools/process_bbox.py
 python data/TF2023/tools/process_bbox.py
 ```
@@ -49,7 +49,7 @@ python data/TF2023/tools/process_bbox.py
 Download the EgoExoBench **multiple-choice questions (MCQs)** file [(link)](https://www.kaggle.com/datasets/d481439076f14580fc0fd85fda68e0c832e85fd7600d93d7f90e624731bebdfc) and place it in the `MCQ/` directory.
 
 ## Installation
-```
+```shell
 git clone https://github.com/ayiyayi/EgoExoBench.git
 cd EgoExoBench
 ```
@@ -59,7 +59,7 @@ Please note that different VLMs require specific environment configurations (e.g
 
 ## 🚀 Model Evaluation
 Evaluation is built upon [VLMEvalKit](https://github.com/open-compass/VLMEvalKit).
-```
+```shell
 # for VLMs that consume small amounts of GPU memory
 torchrun --nproc-per-node=1 run.py --data EgoExoBench_MCQ --model Qwen2.5-VL-7B-Instruct-ForVideo
 
@@ -69,5 +69,5 @@ python run.py --data EgoExoBench_MCQ --model Qwen2.5-VL-72B-Instruct-ForVideo
 
 ## 🙏 Acknowledgements
 This codebase is based on [VLMEvalKit](https://github.com/open-compass/VLMEvalKit).
-EgoExoBench builds upon publicly available ego–exo datasets: [Ego-Exo4D](https://ego-exo4d-data.org/), [LEMMA](https://sites.google.com/view/lemma-activity), [EgoExoLearn](https://huggingface.co/datasets/hyf015/EgoExoLearn),  [TF2023](https://github.com/ziweizhao1993/PEN), [EgoMe](https://huggingface.co/datasets/HeqianQiu/EgoMe), [CVMHAT](https://github.com/RuizeHan/CVMHT).
+EgoExoBench builds upon publicly available ego–exo datasets: [Ego-Exo4D](https://ego-exo4d-data.org/), [LEMMA](https://sites.google.com/view/lemma-activity), [EgoExoLearn](https://huggingface.co/datasets/hyf015/EgoExoLearn), [TF2023](https://github.com/ziweizhao1993/PEN), [EgoMe](https://huggingface.co/datasets/HeqianQiu/EgoMe), [CVMHAT](https://github.com/RuizeHan/CVMHT).
 Thanks for open-sourcing!
