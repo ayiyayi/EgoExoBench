@@ -155,8 +155,75 @@ class NVILA(BaseModel):
 
         return "\n".join(filtered_lines).strip()
 
+    def _load_video(self, video_path, num_frames):
+        import glob
+        import cv2
+        import numpy as np
+
+        # Load video frames from a directory
+        if os.path.isdir(video_path):
+            frame_paths = sorted(glob.glob(os.path.join(video_path, "*")))
+            indices = np.round(np.linspace(0, len(frame_paths) - 1, num_frames)).astype(int)
+            return [Image.open(frame_paths[index]) for index in indices]
+
+        # Load video frames from a video file
+        vidcap = cv2.VideoCapture(video_path)
+        video_fps = vidcap.get(cv2.CAP_PROP_FPS)
+
+        # Find the last frame as frame count might not be accurate
+        frame_count = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
+        while frame_count > 0:
+            vidcap.set(cv2.CAP_PROP_POS_FRAMES, frame_count - 1)
+            if vidcap.grab():
+                break
+            frame_count -= 1
+        else:
+            raise ValueError(f"Video '{video_path}' has no frames.")
+
+        indices = np.round(np.linspace(0, frame_count - 1, num_frames)).astype(int)
+
+        frames = {}
+        for index in indices:
+            if index in frames:
+                continue
+            vidcap.set(cv2.CAP_PROP_POS_FRAMES, index)
+            success, frame = vidcap.read()
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frames[index] = Image.fromarray(frame)
+        return [frames[index] for index in indices if index in frames]
+    
+    def generate_inner_multi_video(self, message, dataset=None):
+        from VILA.llava.entry import load
+        
+        prompt = []
+        for msg in message:
+            if msg['type'] == 'image':
+                media = Image.open(msg['value'])
+                prompt.append(media)
+            elif msg['type'] == 'text':
+                prompt.append(msg['value'])
+            elif msg['type'] == 'video':
+                media = self._load_video(msg['value'], num_frames=msg['nframes'])
+                prompt.append(media)
+
+        
+        from transformers import GenerationConfig
+        generation_config = GenerationConfig(
+            max_new_tokens=512, 
+            max_length=16384
+        )
+        
+        if not hasattr(self, 'model'):
+            self.model = load(self.model_path)
+
+        response = self.model.generate_content(prompt, draft=True, generation_config=generation_config)
+        return self._extract_model_response(response)
+                
     def generate_inner(self, message, dataset=None):
         import shutil
+        
+        if dataset == 'EgoExoBench_MCQ':
+            return self.generate_inner_multi_video(message, dataset)
 
         # Check if 'vila-infer' command exists
         if shutil.which('vila-infer') is None:

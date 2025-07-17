@@ -197,6 +197,15 @@ def reorganize_prompt(message, image_num, dataset=None):
         for i in range(image_num):
             prompt = prompt.replace('<image>', f'<Image-{i + 1}>', 1)
         prompt = ''.join([f'Image-{i + 1}: <image>\n' for i in range(image_num)]) + prompt
+    elif dataset is not None and listinstr(['EgoExoBench_MCQ'], dataset): 
+        prompt, start_image_idx = '', 1
+        for x in message:
+            if x['type'] == 'text':
+                prompt += x['value']
+                start_image_idx = 1
+            elif x['type'] == 'image':
+                prompt += f'Image-{start_image_idx}: <image>\n'
+                start_image_idx += 1
     elif image_num == 1:
         prompt = '<image>\n' + '\n'.join([x['value'] for x in message if x['type'] == 'text'])
     else:

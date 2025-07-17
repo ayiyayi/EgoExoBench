@@ -338,7 +338,9 @@ class Qwen2VLChat(Qwen2VLPromptMixin, BaseModel):
                     item['max_pixels'] = self.max_pixels
                 if self.total_pixels is not None:
                     item['total_pixels'] = self.total_pixels
-                if self.fps is not None:
+                if 'nframes' in s:
+                    item['nframes'] = s['nframes']
+                elif self.fps is not None:
                     item['fps'] = self.fps
                 elif self.nframe is not None:
                     import cv2

@@ -500,5 +500,6 @@ def main():
 
 
 if __name__ == '__main__':
+    os.environ['LMUData'] = '/VLMEvalKit/EgoExoBench/videos'
     load_env()
     main()
