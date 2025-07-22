@@ -1165,11 +1165,7 @@ qwen2vl_series = {
         model_path="Qwen/Qwen2.5-VL-72B-Instruct",
         min_pixels=128 * 28 * 28,
         max_pixels=768 * 28 * 28,
-<<<<<<< HEAD
-        total_pixels=24576 * 28 * 28,
-=======
         total_pixels=128000 * 28 * 28,
->>>>>>> 81673462e4d013099a94cca6c0ce4193e0fc7375
         use_custom_prompt=False,
     ),
     "Qwen2.5-VL-72B-Instruct-AWQ": partial(
