@@ -77,7 +77,7 @@ class EgoExoBench_MCQ(VideoBaseDataset):
         if media['type'] in ['image']:
             original_image_path = osp.join(video_root, media['image_paths'][0])
             processed_video_path = osp.join(video_root, 'processed_video', f'{mcq_idx}.jpg')
-            if not os.path.exists(processed_video_path):
+            if not osp.exists(processed_video_path):
                 shutil.copy(original_image_path, processed_video_path)
             return dict(type='image', value=processed_video_path)  
         
@@ -121,59 +121,50 @@ class EgoExoBench_MCQ(VideoBaseDataset):
             for media_path in media_paths:
                 img_path = media_path.split('/')[-1]
                 save_image_path = osp.join(save_dir, img_path)
-                shutil.copy(media_path, save_image_path)
+                if not osp.exists(save_image_path):
+                    shutil.copy(media_path, save_image_path)
                 input_images.append(save_image_path)
                 
             return input_images
             
         if 'video_start' in media and 'video_end' in media and media['video_start'] is not None and media['video_end'] is not None:
-            bound = (
-                media['video_start'], media['video_end']
-            )
+            bound = (media['video_start'], media['video_end'])
         video_path = os.path.join(video_root, media['video_path'])
         
-        def read_video(video_path, bound=None, num_segments=16):
+        save_dir = osp.join(video_root, 'processed_frames', str(mcq_idx))
+        if osp.exists(save_dir) and len(os.listdir(save_dir)) > 0:
+            # If the frames are already processed, return the existing paths
+            frame_paths = [osp.join(save_dir, f) for f in sorted(os.listdir(save_dir)) if f.endswith('.jpg')]
+            return frame_paths
+        else:
             from decord import VideoReader, cpu
             vr = VideoReader(video_path, ctx=cpu(0), num_threads=1)
             max_frame = len(vr) - 1
             fps = float(vr.get_avg_fps())
 
             images_group = list()
-            frame_indices = self.get_index(bound, fps, max_frame, first_idx=0, num_segments=num_segments)
-            save_dir = osp.join(video_root, 'processed_frames', str(mcq_idx))
-            
-            if osp.exists(save_dir) and len(os.listdir(save_dir)) > 0:
-                return None, frame_indices
+            frame_indices = self.get_index(bound, fps, max_frame, first_idx=0, num_segments=media['nframes'])
         
             for frame_index in frame_indices:
                 img = Image.fromarray(vr[frame_index].asnumpy())
                 images_group.append(img)
             torch_imgs = self.transform(images_group)
-            return torch_imgs, frame_indices
 
-        def save_video_frames(imgs, video_root, frame_indices, mcq_idx):
-
-            save_dir = osp.join(video_root, 'processed_frames', str(mcq_idx))
             os.makedirs(save_dir, exist_ok=True)
             frame_paths = [osp.join(save_dir, f'{fidx:07d}.jpg') for fidx in frame_indices]
 
             flag = np.all([osp.exists(pth) for pth in frame_paths])
 
             if not flag:
-                block_size = imgs.size(0) // len(frame_indices)
-                split_tensors = torch.split(imgs, block_size)
+                block_size = torch_imgs.size(0) // len(frame_indices)
+                split_tensors = torch.split(torch_imgs, block_size)
                 to_pil = transforms.ToPILImage()
                 images = [to_pil(arr) for arr in split_tensors]
                 for im, pth in zip(images, frame_paths):
                     if not osp.exists(pth):
                         im.save(pth)
-
+    
             return frame_paths
-    
-    
-        torch_imgs, frame_indices = read_video(video_path, bound, media['nframes'])
-        img_frame_paths = save_video_frames(torch_imgs, video_root, frame_indices, mcq_idx)
-        return img_frame_paths
     
     def process_text_and_media(self, text, media_list, video_llm, mcq_idx):
 
