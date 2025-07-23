@@ -58,7 +58,7 @@ Please note that different VLMs require specific environment configurations (e.g
 [Qwen2.5VL](https://github.com/QwenLM/Qwen2.5-VL), [InternVL3](https://github.com/OpenGVLab/InternVL), [LLaVA-OneVision](https://github.com/LLaVA-VL/LLaVA-NeXT), [LLaVA-NeXT-Video](https://github.com/LLaVA-VL/LLaVA-NeXT)
 
 ## 🚀 Model Evaluation
-Evaluation is built upon [VLMEvalKit](https://github.com/open-compass/VLMEvalKit).
+Evaluation is built upon [VLMEvalKit](https://github.com/open-compass/VLMEvalKit/tree/main/vlmeval/dataset/EgoExoBench).
 ```shell
 # for VLMs that consume small amounts of GPU memory
 torchrun --nproc-per-node=1 run.py --data EgoExoBench_MCQ --model Qwen2.5-VL-7B-Instruct-ForVideo
