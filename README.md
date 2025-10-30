@@ -3,7 +3,7 @@
   
 This is the official repository of [ EgoExoBench: A
 Benchmark for First- and Third-person View Video
-Understanding in MLLMs]()
+Understanding in MLLMs](https://arxiv.org/abs/2507.18342)
 
 ## 📊 Benchmark Overview
 
