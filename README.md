@@ -1,9 +1,10 @@
 # EgoExoBench
+📄 [Report](https://arxiv.org/abs/2507.18342) | 📊 [Data](https://huggingface.co/datasets/Heleun/EgoExoBench_MCQ)
 
-  
-This is the official repository of [ EgoExoBench: A
+This is the official repository of **EgoExoBench: A
 Benchmark for First- and Third-person View Video
-Understanding in MLLMs](https://arxiv.org/abs/2507.18342)
+Understanding in MLLMs.**
+
 
 ## 📊 Benchmark Overview
 
@@ -15,7 +16,27 @@ Understanding in MLLMs](https://arxiv.org/abs/2507.18342)
 
 ## 📝 Data Preparation
 To get started with EgoExoBench, follow the steps below to prepare data:
-### Dataset Collection
+### **Method 1: Direct Download (Recommended)**
+We provide pre-processed videos, frames, and multiple-choice question (MCQ) files on [Hugging Face](https://huggingface.co/datasets/Heleun/EgoExoBench_MCQ).
+You can download them directly without additional preprocessing.
+
+* **MCQs:**
+  The MCQs are provided in `.tsv` format, following the [VLMEvalKit](https://github.com/open-compass/VLMEvalKit) data structure.
+
+* **Processed Videos and Frames:**
+
+  * The **processed videos** directory contains video clips corresponding to each MCQ.
+    These files are suitable for models that accept **video input** (e.g., **Qwen2.5-VL**).
+  * The **processed frames** directory contains frame sequences extracted from videos.
+    These are used for models that take **image sequences** as input (e.g., **InternVL**).
+
+---
+
+### **Method 2: Build from Source Datasets**
+
+Alternatively, you can build the benchmark yourself by downloading the original datasets.
+
+#### Dataset Collection
 EgoExoBench builds upon six publicly available ego–exo datasets. Please download the videos from the following sources:
 
 * [Ego-Exo4D](https://ego-exo4d-data.org/)
@@ -39,14 +60,14 @@ EgoExoBench/
     └── TF2023/
         └── data/
 ```
-### Data Preparation
+#### Data Preparation
 For the CVMHAT and TF2023 datasets, we utilize the bounding box annotations to augment the original frames by overlaying bounding boxes that indicate the target person. To generate these bboxes, run the following commands:
 ```shell
 python data/CVMHAT/tools/process_bbox.py
 python data/TF2023/tools/process_bbox.py
 ```
-### Download Multiple-Choice Questions (MCQs)
-Download the EgoExoBench **multiple-choice questions (MCQs)** file [(link)](https://www.kaggle.com/datasets/d481439076f14580fc0fd85fda68e0c832e85fd7600d93d7f90e624731bebdfc) and place it in the `MCQ/` directory.
+#### Download Multiple-Choice Questions (MCQs)
+Download the EgoExoBench **multiple-choice questions (MCQs)** file [(link)](https://huggingface.co/datasets/Heleun/EgoExoBench_MCQ) and place it in the `MCQ/` directory.
 
 ## Installation
 ```shell
